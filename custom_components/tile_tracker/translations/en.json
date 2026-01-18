@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tile Account",
+        "description": "Enter your Tile account credentials to connect your Tile devices.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Tile",
+        "description": "Your Tile session has expired. Please re-enter your credentials.",
+        "data": {
+          "username": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Tile API",
+      "invalid_auth": "Invalid email or password",
+      "unknown": "An unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This Tile account is already configured",
+      "reauth_successful": "Re-authentication successful"
+    }
+  },
+  "entity": {
+    "device_tracker": {
+      "tile": {
+        "state_attributes": {
+          "advertised_rssi": {
+            "name": "Advertised RSSI"
+          },
+          "speed": {
+            "name": "Speed"
+          },
+          "ring_state": {
+            "name": "Ring State"
+          },
+          "tile_uuid": {
+            "name": "Tile UUID"
+          },
+          "tile_type": {
+            "name": "Tile Type"
+          },
+          "last_tile_state": {
+            "name": "Last Tile State"
+          }
+        }
+      }
+    },
+    "select": {
+      "song": {
+        "name": "Song",
+        "state": {
+          "default": "Default",
+          "chirp": "Chirp",
+          "chime": "Chime",
+          "bell": "Bell",
+          "alarm": "Alarm",
+          "siren": "Siren",
+          "melody": "Melody",
+          "beep": "Beep"
+        }
+      }
+    }
+  },
+  "services": {
+    "play_sound": {
+      "name": "Play Sound",
+      "description": "Play a sound on a Tile device via Bluetooth.",
+      "fields": {
+        "tile_id": {
+          "name": "Tile ID",
+          "description": "The UUID or name of the Tile to ring."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "The volume level for the ring tone (low, medium, high)."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "How long to play the sound in seconds (1-30)."
+        },
+        "song_id": {
+          "name": "Song",
+          "description": "The song/ringtone to play (0=Default, 1=Chirp, etc.). Uses the Tile's selected song if not specified."
+        }
+      }
+    },
+    "refresh_tiles": {
+      "name": "Refresh Tiles",
+      "description": "Refresh all Tile device data from the Tile API."
+    }
+  }
+}

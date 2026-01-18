@@ -1,0 +1,12 @@
+{
+  "domain": "tile_tracker",
+  "name": "Tile Tracker",
+  "codeowners": ["@jeff-hamm"],
+  "config_flow": true,
+  "dependencies": ["bluetooth"],
+  "documentation": "https://github.com/jeff-hamm/ha-tile",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/jeff-hamm/ha-tile/issues",
+  "requirements": ["aiohttp>=3.8.0", "bleak>=0.21.0"],
+  "version": "1.0.0"
+}

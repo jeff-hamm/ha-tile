@@ -1,0 +1,90 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Tile Tracker",
+        "description": "Enter your Tile account credentials to connect your Tile devices.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate Tile Tracker",
+        "description": "Please enter your new password to reauthenticate.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Tile API",
+      "invalid_auth": "Invalid email or password",
+      "unknown": "Unknown error occurred"
+    },
+    "abort": {
+      "already_configured": "Account is already configured",
+      "reauth_successful": "Reauthentication successful"
+    }
+  },
+  "services": {
+    "refresh_tiles": {
+      "name": "Refresh Tiles",
+      "description": "Force refresh all Tile device states from the Tile API."
+    },
+    "play_sound": {
+      "name": "Play Sound",
+      "description": "Play a sound on a Tile device via Bluetooth.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity",
+          "description": "The Tile device tracker entity to ring."
+        },
+        "volume": {
+          "name": "Volume",
+          "description": "Volume level (low, medium, high)."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Duration in seconds to ring (1-30)."
+        },
+        "song_id": {
+          "name": "Song",
+          "description": "The song/ringtone to play. If not specified, uses the Tile's selected song."
+        }
+      }
+    }
+  },
+  "entity": {
+    "device_tracker": {
+      "tile": {
+        "state_attributes": {
+          "advertised_rssi": {
+            "name": "Advertised RSSI"
+          },
+          "speed": {
+            "name": "Speed"
+          },
+          "ring_state": {
+            "name": "Ring State"
+          }
+        }
+      }
+    },
+    "select": {
+      "song": {
+        "name": "Song",
+        "state": {
+          "default": "Default",
+          "chirp": "Chirp",
+          "chime": "Chime",
+          "bell": "Bell",
+          "alarm": "Alarm",
+          "siren": "Siren",
+          "melody": "Melody",
+          "beep": "Beep"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+play_sound:
+  name: Play Sound
+  description: Play a sound on a Tile device via Bluetooth.
+  fields:
+    tile_id:
+      name: Tile ID
+      description: The UUID or name of the Tile to ring.
+      required: true
+      example: "abc123def456"
+      selector:
+        text:
+    volume:
+      name: Volume
+      description: The volume level for the ring tone.
+      required: false
+      default: medium
+      example: "high"
+      selector:
+        select:
+          options:
+            - "low"
+            - "medium"
+            - "high"
+    duration:
+      name: Duration
+      description: How long to play the sound in seconds (1-30).
+      required: false
+      default: 5
+      example: 10
+      selector:
+        number:
+          min: 1
+          max: 30
+          step: 1
+          unit_of_measurement: seconds
+          mode: slider
+    song_id:
+      name: Song
+      description: The song/ringtone to play (0=Default, 1=Chirp, 2=Chime, etc.). If not specified, uses the song selected in the Tile's song selector entity.
+      required: false
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 20
+          step: 1
+          mode: box
+
+refresh_tiles:
+  name: Refresh Tiles
+  description: Refresh all Tile device data from the Tile API.
+
+scan_tiles:
+  name: Scan for Tiles
+  description: Scan for nearby Tile devices via Bluetooth. Results are cached to speed up subsequent ring commands.
+  fields:
+    timeout:
+      name: Timeout
+      description: How long to scan for devices in seconds.
+      required: false
+      default: 10.0
+      example: 15.0
+      selector:
+        number:
+          min: 5
+          max: 60
+          step: 1
+          unit_of_measurement: seconds
+          mode: slider
+    force_refresh:
+      name: Force Refresh
+      description: Force a new scan even if cached results are available.
+      required: false
+      default: false
+      selector:
+        boolean:
+
+clear_cache:
+  name: Clear BLE Cache
+  description: Clear the Bluetooth device cache. Use this if a Tile has moved or if you're having connection issues.
