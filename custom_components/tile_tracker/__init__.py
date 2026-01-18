@@ -14,8 +14,8 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    CONF_EMAIL,
     CONF_PASSWORD,
-    CONF_USERNAME,
     Platform,
 )
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -68,12 +68,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Tile Tracker from a config entry."""
     hass.data.setdefault(DOMAIN, {})
     
-    username = entry.data[CONF_USERNAME]
+    email = entry.data[CONF_EMAIL]
     password = entry.data[CONF_PASSWORD]
     scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     
     # Create API client
-    api = TileApiClient(username, password)
+    api = TileApiClient(email, password)
     
     # Test authentication
     try:
