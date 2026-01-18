@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import aiohttp
@@ -83,8 +83,8 @@ class TileDevice:
         last_ts = None
         if timestamp:
             try:
-                # Tile API returns milliseconds since epoch
-                last_ts = datetime.fromtimestamp(timestamp / 1000)
+                # Tile API returns milliseconds since epoch - use UTC timezone
+                last_ts = datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc)
             except (ValueError, TypeError, OSError):
                 pass
         
@@ -94,10 +94,11 @@ class TileDevice:
         if lost_ts_raw:
             try:
                 if isinstance(lost_ts_raw, (int, float)):
-                    lost_ts = datetime.fromtimestamp(lost_ts_raw / 1000)
+                    lost_ts = datetime.fromtimestamp(lost_ts_raw / 1000, tz=timezone.utc)
                 elif isinstance(lost_ts_raw, str):
-                    # ISO format
-                    lost_ts = datetime.fromisoformat(lost_ts_raw.replace("Z", "+00:00"))
+                    # ISO format - ensure timezone aware
+                    parsed = datetime.fromisoformat(lost_ts_raw.replace("Z", "+00:00"))
+                    lost_ts = parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
             except (ValueError, TypeError, OSError):
                 pass
         
