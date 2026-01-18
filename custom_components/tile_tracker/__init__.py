@@ -55,6 +55,7 @@ PLATFORMS: list[Platform] = [
     Platform.SELECT,
     Platform.BINARY_SENSOR,
     Platform.SENSOR,
+    Platform.SWITCH,
 ]
 
 # Service schemas

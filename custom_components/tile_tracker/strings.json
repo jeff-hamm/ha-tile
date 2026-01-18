@@ -134,6 +134,15 @@
         "name": "Location Accuracy"
       }
     },
+    "switch": {
+      "lost": {
+        "name": "Lost",
+        "state": {
+          "on": "Lost",
+          "off": "Found"
+        }
+      }
+    },
     "select": {
       "song": {
         "name": "Song",
