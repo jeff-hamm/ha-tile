@@ -58,6 +58,16 @@ class TileDevice:
     connection_state: str | None = None
     voip_state: str | None = None
     
+    # Lost status (from diagnostics)
+    lost: bool = False
+    lost_timestamp: datetime | None = None
+    
+    # Device kind (TILE, PHONE, etc.)
+    kind: str = "TILE"
+    
+    # MAC address (derived from UUID)
+    mac_address: str | None = None
+    
     # Song configuration (populated via BLE when available)
     available_songs: list[dict] | None = None  # [{"id": 0, "name": "Default"}, ...]
     selected_song_id: int = 0  # Currently selected song ID for ring
@@ -77,6 +87,25 @@ class TileDevice:
                 last_ts = datetime.fromtimestamp(timestamp / 1000)
             except (ValueError, TypeError, OSError):
                 pass
+        
+        # Parse lost timestamp
+        lost_ts_raw = data.get("lost_timestamp")
+        lost_ts = None
+        if lost_ts_raw:
+            try:
+                if isinstance(lost_ts_raw, (int, float)):
+                    lost_ts = datetime.fromtimestamp(lost_ts_raw / 1000)
+                elif isinstance(lost_ts_raw, str):
+                    # ISO format
+                    lost_ts = datetime.fromisoformat(lost_ts_raw.replace("Z", "+00:00"))
+            except (ValueError, TypeError, OSError):
+                pass
+        
+        # Derive MAC address from UUID (first 12 chars = MAC without colons)
+        mac_address = None
+        uuid_clean = tile_uuid.replace("-", "").replace(":", "").upper()
+        if len(uuid_clean) >= 12:
+            mac_address = ":".join(uuid_clean[i:i+2] for i in range(0, 12, 2))
 
         return cls(
             tile_uuid=tile_uuid,
@@ -100,6 +129,10 @@ class TileDevice:
             last_timestamp=last_ts,
             connection_state=last_state.get("connection_state"),
             voip_state=last_state.get("voip_state"),
+            lost=data.get("lost", False),
+            lost_timestamp=lost_ts,
+            kind=data.get("kind", "TILE"),
+            mac_address=mac_address,
         )
 
     @property
@@ -302,6 +335,104 @@ class TileApiClient:
         except aiohttp.ClientError as err:
             _LOGGER.error("Error getting tile states: %s", err)
             return {}
+
+    async def set_lost(self, tile_uuid: str, lost: bool) -> bool:
+        """Mark a tile as lost or found.
+        
+        Args:
+            tile_uuid: The UUID of the tile
+            lost: True to mark as lost, False to mark as found
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        session = await self._get_session()
+        
+        url = f"{TILE_API_BASE}/tiles/{tile_uuid}"
+        headers = self._get_headers()
+        headers["Content-Type"] = "application/json"
+        
+        data = {"lost": lost}
+        
+        try:
+            async with session.patch(url, headers=headers, json=data) as response:
+                result = await response.json()
+                
+                if result.get("result_code") != 0:
+                    error_msg = result.get("result", {}).get("message", "Unknown error")
+                    _LOGGER.error("Error setting lost status for %s: %s", tile_uuid, error_msg)
+                    return False
+                
+                _LOGGER.info("Set lost=%s for tile %s", lost, tile_uuid)
+                return True
+
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error setting lost status for %s: %s", tile_uuid, err)
+            return False
+
+    async def get_tile_raw(self, tile_uuid: str) -> dict[str, Any] | None:
+        """Get raw API response for a tile (for diagnostics).
+        
+        Args:
+            tile_uuid: The UUID of the tile
+            
+        Returns:
+            Raw API response dict or None
+        """
+        session = await self._get_session()
+        
+        url = f"{TILE_API_BASE}/tiles/{tile_uuid}"
+        
+        try:
+            async with session.get(url, headers=self._get_headers()) as response:
+                result = await response.json()
+                
+                if result.get("result_code") != 0:
+                    return None
+                
+                return result.get("result", {})
+
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error getting raw tile data %s: %s", tile_uuid, err)
+            return None
+
+    async def get_all_tiles_raw(self) -> list[dict[str, Any]]:
+        """Get raw API response for all tiles (for diagnostics).
+        
+        Similar to the official Tile app's diagnostics download.
+        
+        Returns:
+            List of raw tile data dicts
+        """
+        tiles = await self.get_tiles(fetch_details=False)
+        raw_tiles = []
+        
+        for tile in tiles:
+            raw = await self.get_tile_raw(tile.tile_uuid)
+            if raw:
+                # Format similar to official diagnostics
+                diag = {
+                    "uuid": tile.tile_uuid,
+                    "name": tile.name,
+                    "archetype": tile.archetype,
+                    "kind": tile.kind,
+                    "firmware_version": tile.firmware_version,
+                    "hardware_version": tile.hardware_version,
+                    "latitude": tile.latitude,
+                    "longitude": tile.longitude,
+                    "altitude": tile.altitude,
+                    "accuracy": tile.accuracy,
+                    "last_timestamp": tile.last_timestamp.isoformat() if tile.last_timestamp else None,
+                    "ring_state": tile.ring_state,
+                    "voip_state": tile.voip_state,
+                    "lost": tile.lost,
+                    "lost_timestamp": tile.lost_timestamp.isoformat() if tile.lost_timestamp else None,
+                    "dead": tile.is_dead,
+                    "visible": tile.visible,
+                }
+                raw_tiles.append(diag)
+        
+        return raw_tiles
 
     async def close(self) -> None:
         """Close the session if we own it."""

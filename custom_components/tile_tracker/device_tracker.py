@@ -177,12 +177,24 @@ class TileDeviceTracker(CoordinatorEntity, TrackerEntity):
         if not self.tile:
             return None
         
-        return {
+        info = {
             "identifiers": {(DOMAIN, self.tile.tile_uuid)},
             "name": self.tile.name,
             "manufacturer": "Tile",
             "model": self.tile.tile_type or "Tile Tracker",
         }
+        
+        # Add firmware/hardware versions if available
+        if self.tile.firmware_version:
+            info["sw_version"] = self.tile.firmware_version
+        if self.tile.hardware_version:
+            info["hw_version"] = self.tile.hardware_version
+        
+        # Add serial number (using MAC address)
+        if self.tile.mac_address:
+            info["serial_number"] = self.tile.mac_address
+        
+        return info
 
     @property
     def icon(self) -> str:

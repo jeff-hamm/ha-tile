@@ -37,17 +37,25 @@ from .const import (
     SERVICE_REFRESH_TILES,
     SERVICE_SCAN_TILES,
     SERVICE_CLEAR_CACHE,
+    SERVICE_SET_LOST,
     ATTR_TILE_ID,
     ATTR_VOLUME,
     ATTR_DURATION,
     ATTR_SONG_ID,
+    ATTR_LOST,
 )
 from .tile_api import TileApiClient, TileDevice, TileAuthError
 from .tile_service import get_tile_service, async_cleanup_services
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.DEVICE_TRACKER, Platform.BUTTON, Platform.SELECT]
+PLATFORMS: list[Platform] = [
+    Platform.DEVICE_TRACKER,
+    Platform.BUTTON,
+    Platform.SELECT,
+    Platform.BINARY_SENSOR,
+    Platform.SENSOR,
+]
 
 # Service schemas
 SERVICE_PLAY_SOUND_SCHEMA = vol.Schema(
@@ -60,6 +68,13 @@ SERVICE_PLAY_SOUND_SCHEMA = vol.Schema(
         vol.Optional(ATTR_SONG_ID): vol.All(
             vol.Coerce(int), vol.Range(min=0, max=20)
         ),
+    }
+)
+
+SERVICE_SET_LOST_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_TILE_ID): str,
+        vol.Required(ATTR_LOST): bool,
     }
 )
 
@@ -254,6 +269,45 @@ async def _async_setup_services(hass: HomeAssistant) -> None:
             SERVICE_CLEAR_CACHE,
             handle_clear_cache,
         )
+    
+    async def handle_set_lost(call: ServiceCall) -> None:
+        """Handle set_lost service call."""
+        tile_id = call.data[ATTR_TILE_ID]
+        lost = call.data[ATTR_LOST]
+        
+        _LOGGER.info("Setting lost=%s for Tile %s", lost, tile_id)
+        
+        # Find the tile and API client
+        tile_service = get_tile_service(hass)
+        tile = tile_service.get_tile_from_coordinator(tile_id)
+        
+        if not tile:
+            _LOGGER.error("Tile not found: %s", tile_id)
+            return
+        
+        # Get API client from entry data
+        for entry_id, data in hass.data[DOMAIN].items():
+            if not isinstance(data, dict):
+                continue
+            api = data.get("api")
+            if api:
+                success = await api.set_lost(tile.tile_uuid, lost)
+                if success:
+                    # Refresh to get updated state
+                    coordinator = data.get("coordinator")
+                    if coordinator:
+                        await coordinator.async_request_refresh()
+                    return
+        
+        _LOGGER.error("Could not find API client for tile %s", tile_id)
+    
+    if not hass.services.has_service(DOMAIN, SERVICE_SET_LOST):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SET_LOST,
+            handle_set_lost,
+            schema=SERVICE_SET_LOST_SCHEMA,
+        )
 
 
 def _async_remove_services(hass: HomeAssistant) -> None:
@@ -262,6 +316,7 @@ def _async_remove_services(hass: HomeAssistant) -> None:
     hass.services.async_remove(DOMAIN, SERVICE_REFRESH_TILES)
     hass.services.async_remove(DOMAIN, SERVICE_SCAN_TILES)
     hass.services.async_remove(DOMAIN, SERVICE_CLEAR_CACHE)
+    hass.services.async_remove(DOMAIN, SERVICE_SET_LOST)
     # Cleanup tile service instance
     asyncio.create_task(async_cleanup_services(hass))
 

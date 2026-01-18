@@ -90,6 +90,21 @@ ATTR_AUTH_KEY: Final = "auth_key"
 ATTR_AVAILABLE_SONGS: Final = "available_songs"
 ATTR_SELECTED_SONG: Final = "selected_song"
 
+# New entity attributes (from diagnostics)
+ATTR_LOST: Final = "lost"
+ATTR_LOST_TIMESTAMP: Final = "lost_timestamp"
+ATTR_ACCURACY: Final = "accuracy"
+ATTR_ALTITUDE: Final = "altitude"
+ATTR_KIND: Final = "kind"
+ATTR_VOIP_STATE: Final = "voip_state"
+ATTR_VISIBLE: Final = "visible"
+ATTR_DEAD: Final = "dead"
+ATTR_PRODUCT: Final = "product"
+ATTR_MAC_ADDRESS: Final = "mac_address"
+
+# Services
+SERVICE_SET_LOST: Final = "set_lost"
+
 # Volume levels for ring
 TILE_VOLUME_LOW: Final = 1
 TILE_VOLUME_MED: Final = 2

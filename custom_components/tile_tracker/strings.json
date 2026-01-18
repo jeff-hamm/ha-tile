@@ -36,9 +36,9 @@
       "name": "Play Sound",
       "description": "Play a sound on a Tile device via Bluetooth.",
       "fields": {
-        "entity_id": {
-          "name": "Entity",
-          "description": "The Tile device tracker entity to ring."
+        "tile_id": {
+          "name": "Tile ID",
+          "description": "The UUID or name of the Tile to ring."
         },
         "volume": {
           "name": "Volume",
@@ -51,6 +51,38 @@
         "song_id": {
           "name": "Song",
           "description": "The song/ringtone to play. If not specified, uses the Tile's selected song."
+        }
+      }
+    },
+    "scan_tiles": {
+      "name": "Scan for Tiles",
+      "description": "Scan for nearby Tile devices via Bluetooth.",
+      "fields": {
+        "timeout": {
+          "name": "Timeout",
+          "description": "How long to scan for devices in seconds."
+        },
+        "force_refresh": {
+          "name": "Force Refresh",
+          "description": "Force a new scan even if cached results are available."
+        }
+      }
+    },
+    "clear_cache": {
+      "name": "Clear BLE Cache",
+      "description": "Clear the Bluetooth device cache."
+    },
+    "set_lost": {
+      "name": "Set Lost Status",
+      "description": "Mark a Tile as lost or found.",
+      "fields": {
+        "tile_id": {
+          "name": "Tile ID",
+          "description": "The UUID or name of the Tile."
+        },
+        "lost": {
+          "name": "Lost",
+          "description": "True to mark as lost, False to mark as found."
         }
       }
     }
@@ -69,6 +101,37 @@
             "name": "Ring State"
           }
         }
+      }
+    },
+    "binary_sensor": {
+      "lost": {
+        "name": "Lost",
+        "state": {
+          "on": "Lost",
+          "off": "Found"
+        }
+      }
+    },
+    "button": {
+      "locate": {
+        "name": "Locate"
+      },
+      "refresh": {
+        "name": "Refresh"
+      },
+      "scan": {
+        "name": "Scan"
+      }
+    },
+    "sensor": {
+      "rssi": {
+        "name": "Signal Strength"
+      },
+      "last_seen": {
+        "name": "Last Seen"
+      },
+      "accuracy": {
+        "name": "Location Accuracy"
       }
     },
     "select": {

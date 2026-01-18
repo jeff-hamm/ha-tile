@@ -78,3 +78,22 @@ scan_tiles:
 clear_cache:
   name: Clear BLE Cache
   description: Clear the Bluetooth device cache. Use this if a Tile has moved or if you're having connection issues.
+
+set_lost:
+  name: Set Lost Status
+  description: Mark a Tile as lost or found. When marked as lost, Tile's network will help find it.
+  fields:
+    tile_id:
+      name: Tile ID
+      description: The UUID or name of the Tile.
+      required: true
+      example: "abc123def456"
+      selector:
+        text:
+    lost:
+      name: Lost
+      description: True to mark as lost, False to mark as found.
+      required: true
+      example: true
+      selector:
+        boolean:
